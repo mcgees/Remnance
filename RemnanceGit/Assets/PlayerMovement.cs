@@ -2,25 +2,44 @@
 
 public class PlayerMovement : MonoBehaviour
 {
-    public Rigidbody rb;
+    public CharacterController controller;
 
-    public float forwardForce = 2000f;
-    public float sidewarsForce = 500f;
+    public float speed = 12f;
+    public float gravity = -9.81f;
+    public float jumpHeight = 3f;
+
+    public Transform groundCheck;
+    public float groundDistance = 0.4f;
+    public LayerMask groundMask;
+
+    Vector3 velocity;
+    bool isGrounded;
 
     // Update is called once per frame
-    void FixedUpdate()
+    void Update()
     {
-        rb.AddForce(0, 0, forwardForce * Time.deltaTime);
+        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
 
-        if (Input.GetKey("d"))
+        if(isGrounded && velocity.y < 0)
         {
-            rb.AddForce(sidewarsForce * Time.deltaTime, 0, 0, ForceMode.VelocityChange);
+            velocity.y = -2f;
         }
 
-        if (Input.GetKey("a"))
+        float x = Input.GetAxis("Horizontal");
+        float z = Input.GetAxis("Vertical");
+
+        Vector3 move = transform.right * x + transform.forward * z;
+
+        controller.Move(move * speed * Time.deltaTime);
+
+        if(Input.GetButtonDown("Jump") && isGrounded)
         {
-            rb.AddForce(-sidewarsForce * Time.deltaTime, 0, 0, ForceMode.VelocityChange);
+            velocity.y = Mathf.Sqrt(jumpHeight * -2 * gravity);
         }
+
+        velocity.y += gravity * Time.deltaTime;
+
+        controller.Move(velocity * Time.deltaTime);
 
     }
 }
